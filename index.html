@@ -28,8 +28,7 @@ const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.outputEncoding = THREE.sRGBEncoding;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.0;
+renderer.toneMapping = THREE.NoToneMapping;                 // keeps the blue and red saturated instead of washing them to white
 document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
@@ -40,10 +39,15 @@ scene.add(camera);
 
 /* Lights: only blue and pink. They keep their place on screen (blue lower left, pink upper right) while you turn Him,
    so the highlights travel across Him as He turns. */
-const blue = new THREE.SpotLight(0x3f6dff, 11, 30, 0.42, 0.7, 1.2);
+const blue = new THREE.SpotLight(0x1f4dff, 9, 30, 0.42, 0.7, 1.2);
 const BLUE_AT = new THREE.Vector3(-3.8, -2.8, 1.4); scene.add(blue, blue.target);   // lower left of the screen (south west)
-const pink = new THREE.SpotLight(0xff3f9a, 9, 30, 0.42, 0.7, 1.2);
+const pink = new THREE.SpotLight(0xff1f55, 8, 30, 0.42, 0.7, 1.2);
 const PINK_AT = new THREE.Vector3(3.8, 2.8, -1.0); scene.add(pink, pink.target);    // upper right of the screen (north east)
+
+// a faint cool moonlight from above and in front of the viewer, so no part facing you falls into black
+const moon = new THREE.DirectionalLight(0xc8d6ff, 0.28);
+const MOON_AT = new THREE.Vector3(0.6, 3.5, 4); scene.add(moon);
+scene.add(new THREE.HemisphereLight(0x9fb4ff, 0x000000, 0.06));
 
 /* Reflections for the gold tilak and gems: a dark space with a blue and a pink glow, matching the lights */
 let env = null;
@@ -108,6 +112,7 @@ renderer.setAnimationLoop(() => {
   controls.update();
   blue.position.copy(BLUE_AT).applyQuaternion(camera.quaternion);      // turn the lights with the view, round His centre
   pink.position.copy(PINK_AT).applyQuaternion(camera.quaternion);
+  moon.position.copy(MOON_AT).applyQuaternion(camera.quaternion);
   renderer.render(scene, camera);
 });
 </script>
